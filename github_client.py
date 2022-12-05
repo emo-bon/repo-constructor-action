@@ -53,6 +53,14 @@ if __name__ == "__main__":
         # acquire reference to repo
         repo_handle = GITHUB.get_organization(ORG).get_repo(repo)
 
+        # populate repo with google-docs.yml
+        path = "./config/google-docs.yml"
+        content = (
+            f"water: {water_url}\n"
+            f"sediment: {sediment_url}\n"
+        )
+        create_or_update_file(repo_handle, path, content)
+
         # populate repo with emobon_dm_gdrive_downloader.yml
         path = "./.github/workflows/emobon_dm_gdrive_downloader.yml"
         content = (
@@ -71,14 +79,6 @@ if __name__ == "__main__":
            f"        uses: {CHILD_ACTION}\n"
             "      - name: commit\n"
             "        uses: stefanzweifel/git-auto-commit-action@v4\n"
-        )
-        create_or_update_file(repo_handle, path, content)
-
-        # populate repo with google-docs.yml
-        path = "./config/google-docs.yml"
-        content = (
-            f"water: {water_url}\n"
-            f"sediment: {sediment_url}\n"
         )
         create_or_update_file(repo_handle, path, content)
 
