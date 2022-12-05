@@ -1,0 +1,15 @@
+name: 'emo-bon data management repo constructor'
+description: 'create or update the repos from data management metadata'
+inputs:
+  x:
+    description: 'x'
+    required: true
+    default: 'x'
+outputs:
+  fx:
+    description: 'fx'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.x }}
