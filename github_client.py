@@ -67,7 +67,7 @@ if __name__ == "__main__":
             "on:\n"
             "  push:\n"
             "  schedule:\n"
-            "    - cron: '0 0 * * *'\n"
+            "    - cron: '0 0 * * 0'\n"
             "jobs:\n"
             "  emobon_job:\n"
             "    runs-on: ubuntu-latest\n"
