@@ -1,6 +1,6 @@
 # repo-constructor-action
 
-To give an example, the following workflow file will construct new repos based on the information provided in the metadata file.
+To give an example, the following workflow file will construct new repos based on the information provided in the logsheets file.
 
 ```
 on: [push]
