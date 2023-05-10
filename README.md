@@ -5,7 +5,7 @@ To give an example, the following workflow file will construct new repos based o
 ```
 on: [push]
 jobs:
-  job1:
+  job:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
