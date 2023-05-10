@@ -1,22 +1,22 @@
-# emobon_dm_repo_constructor
+# repo-constructor-action
 
 To give an example, the following workflow file will construct new repos based on the information provided in the metadata file.
 
 ```
 on: [push]
 jobs:
-  emobon_dm_repo_constructor:
+  repo-constructor-action:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: emobon dm repo constructor
-        uses: emo-bon/emobon_dm_repo_constructor@master
+      - name: repo constructor action
+        uses: emo-bon/repo-constructor-action@master
         env:
           PAT: ${{ secrets.PAT }}
-          FILE_PATH: EMO_BON_metadata_links.csv
+          FILE_PATH: logsheets.csv
           ORG: emo-bon
-          CHILD_ACTION: emo-bon/emobon_dm_gdrive_downloader@master
+          CHILD_ACTION: emo-bon/logsheet-downloader-action@master
 ```
 
 with:
