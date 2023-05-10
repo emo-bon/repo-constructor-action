@@ -5,12 +5,12 @@ To give an example, the following workflow file will construct new repos based o
 ```
 on: [push]
 jobs:
-  repo-constructor-action:
+  job1:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
-      - name: repo constructor action
+      - name: repo-constructor-action
         uses: emo-bon/repo-constructor-action@master
         env:
           PAT: ${{ secrets.PAT }}
