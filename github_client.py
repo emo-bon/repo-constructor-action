@@ -36,7 +36,7 @@ if __name__ == "__main__":
     CHILD_ACTION = os.environ["CHILD_ACTION"]
 
     df = pd.read_csv(os.path.join(GITHUB_WORKSPACE, FILE_PATH))
-    repos = [f"observatory-{obs}-data" for obs in df["EMOBON_observatory_id"]]
+    repos = [f"observatory-{obs.lower()}-data" for obs in df["EMOBON_observatory_id"]]
     water_urls = [url for url in df["Water Column"]]
     sediment_urls = [url for url in df["Soft sediment"]]
 
