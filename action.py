@@ -36,11 +36,13 @@ if __name__ == "__main__":
     CHILD_ACTION = os.environ["CHILD_ACTION"]
 
     df = pd.read_csv(os.path.join(GITHUB_WORKSPACE, FILE_PATH))
-    repos = [f"observatory-{obs.lower()}-data" for obs in df["EMOBON_observatory_id"]]
+    df = df[df["autogenerate"] == 1]
+    repos = [f"observatory-{obs.lower()}-crate" for obs in df["EMOBON_observatory_id"]]
     water_urls = [url for url in df["Water Column"]]
     sediment_urls = [url for url in df["Soft sediment"]]
+    rocrate_profile_uris = [uri for uri in df["rocrate_profile_uri"]]
 
-    for repo, water_url, sediment_url in zip(repos, water_urls, sediment_urls):
+    for repo, water_url, sediment_url, rocrate_profile_uri in zip(repos, water_urls, sediment_urls, rocrate_profile_uris):
         print(f">>> {repo}")
         
         # create repo
@@ -53,31 +55,31 @@ if __name__ == "__main__":
         # acquire reference to repo
         repo_handle = GITHUB.get_organization(ORG).get_repo(repo)
 
-        # populate repo with google-docs.yml
-        path = "./config/google-docs.yml"
+        # populate repo with workflow_properties.yml
+        path = "./config/workflow_properties.yml"
         content = (
             f"water: {water_url}\n"
             f"sediment: {sediment_url}\n"
+            f"rocrate_profile_uri: {rocrate_profile_uri}\n"
         )
         create_or_update_file(repo_handle, path, content)
 
-        # populate repo with emobon_dm_gdrive_downloader.yml
-        path = "./.github/workflows/emobon_dm_gdrive_downloader.yml"
+        # populate repo with workflow.yml
+        path = "./.github/workflows/workflow.yml"
         content = (
             "on:\n"
             "  push:\n"
             "  schedule:\n"
-            "    - cron: '0 0 * * 0'\n"
+            "    - cron: '0 0 1 * *'\n"
             "jobs:\n"
-            "  emobon_job:\n"
+            "  job:\n"
             "    runs-on: ubuntu-latest\n"
-            "    name: emobon dm gdrive downloader job\n"
             "    steps:\n"
             "      - name: checkout\n"
             "        uses: actions/checkout@v3\n"
             "      - name: download\n"
            f"        uses: {CHILD_ACTION}\n"
-            "      - name: commit\n"
+            "      - name: git-auto-commit-action\n"
             "        uses: stefanzweifel/git-auto-commit-action@v4\n"
         )
         create_or_update_file(repo_handle, path, content)
