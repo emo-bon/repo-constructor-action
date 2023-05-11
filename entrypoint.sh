@@ -1,2 +1,2 @@
 #!/bin/sh
-python /github_client.py
+python /action.py
