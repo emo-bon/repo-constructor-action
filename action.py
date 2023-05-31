@@ -55,6 +55,13 @@ if __name__ == "__main__":
         # acquire reference to repo
         repo_handle = GITHUB.get_organization(ORG).get_repo(repo)
 
+        # populate repo with README.md
+        path = "./README.md"
+        content = (
+            f"# {repo}\n"
+        )
+        create_or_update_file(repo_handle, path, content)
+
         # populate repo with workflow_properties.yml
         path = "./config/workflow_properties.yml"
         content = (
