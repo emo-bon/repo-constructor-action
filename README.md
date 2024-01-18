@@ -16,7 +16,6 @@ jobs:
           PAT: ${{ secrets.PAT }}
           FILE_PATH: logsheets.csv
           ORG: emo-bon
-          CHILD_ACTION: emo-bon/logsheet-downloader-action@master
 ```
 
 with:
@@ -24,4 +23,3 @@ with:
 * `PAT`: a personal access token with repo and workflow scopes
 * `FILE_PATH`: the path to the metadata file
 * `ORG`: the organization in which to construct the new repos
-* `CHILD_ACTION`: the action to add in the workflow of a newly constructed repo
