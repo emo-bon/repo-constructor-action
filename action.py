@@ -59,6 +59,7 @@ if __name__ == "__main__":
         path = "./README.md"
         content = (
             f"# {repo}\n"
+            "This repository is an RO-Crate containing the harvested EMO BON logsheets for this observatory, along with their representation as linked data.\n"
         )
         create_or_update_file(repo_handle, path, content)
 
@@ -98,6 +99,11 @@ if __name__ == "__main__":
             "          REPO: ${{ github.repository }}\n"
             "      - name: rocrate-to-pages\n"
             "        uses: vliz-be-opsci/rocrate-to-pages@latest\n"
+            "        with:\n"
+            "          multiple_rocrates: true\n"
+            "          release_management: false\n"
+            "          include_draft: false\n"
+            "          index_html: false\n"
             "      - name: actions-gh-pages\n"
             "        uses: peaceiris/actions-gh-pages@v3\n"
             "        with:\n"
