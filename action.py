@@ -40,9 +40,10 @@ if __name__ == "__main__":
     water_urls = [url for url in df["Water Column"]]
     sediment_urls = [url for url in df["Soft sediment"]]
     data_quality_control_threshold_dates = [date for date in df["data_quality_control_threshold_date"]]
+    data_quality_control_assignees = [assignee for assignee in df["data_quality_control_assignee"]]
     rocrate_profile_uris = [uri for uri in df["rocrate_profile_uri"]]
 
-    for repo, water_url, sediment_url, data_quality_control_threshold_date, rocrate_profile_uri in zip(repos, water_urls, sediment_urls, data_quality_control_threshold_dates, rocrate_profile_uris):
+    for repo, water_url, sediment_url, data_quality_control_threshold_date, data_quality_control_assignee, rocrate_profile_uri in zip(repos, water_urls, sediment_urls, data_quality_control_threshold_dates, data_quality_control_assignees, rocrate_profile_uris):
         print(f">>> {repo}")
         
         # create repo
@@ -90,7 +91,7 @@ if __name__ == "__main__":
             "        env:\n"
             "          PAT: ${{ secrets.GITHUB_TOKEN }}\n"
             "          REPO: ${{ github.repository }}\n"
-            "          ASSIGNEE: bulricht\n"
+           f"          ASSIGNEE: {data_quality_control_assignee}\n"
             "      - name: git-auto-commit-action\n"
             "        uses: stefanzweifel/git-auto-commit-action@v5\n"
             "        with:\n"
