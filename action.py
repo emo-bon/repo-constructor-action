@@ -125,13 +125,4 @@ if __name__ == "__main__":
         )
         create_or_update_file(repo_handle, path, content)
 
-        # populate repo with .gitignore
-        path = "./.gitignore"
-        content = (
-            "~sembench_data_cache/\n"
-            "~sembench_kwargs.json\n"
-            "unicornpages/\n"
-        )
-        create_or_update_file(repo_handle, path, content)
-
         print()
