@@ -132,6 +132,7 @@ if __name__ == "__main__":
             "          release_management: false\n"
             "          include_draft: false\n"
             "          index_html: false\n"
+            "          space_to_pages_homepage: https://data.emobon.embrc.eu\n"
             "      - name: actions-gh-pages\n"
             "        uses: peaceiris/actions-gh-pages@v3\n"
             "        with:\n"
