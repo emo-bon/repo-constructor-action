@@ -81,7 +81,7 @@ if __name__ == "__main__":
             "      - name: checkout\n"
             "        uses: actions/checkout@v3\n"
             "      - name: download\n"
-            "        uses: emo-bon/logsheet-downloader-action@master\n"
+            "        uses: emo-bon/populate-action@dev\n"
             "      - name: git-auto-commit-action\n"
             "        uses: stefanzweifel/git-auto-commit-action@v5\n"
             "        with:\n"

@@ -1,5 +1,0 @@
-name: 'repo-constructor-action'
-description: 'repo-constructor-action'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
