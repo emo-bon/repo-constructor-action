@@ -2,6 +2,7 @@ import base64
 import os
 import pandas as pd
 import yaml
+from pathlib import Path
 from github import Github, GithubException
 
 def create_or_update_file(repo_handle, path, content):
