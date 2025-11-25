@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
         # generate workflow file
         with open("/opt/workflow_template.yml", "r") as f:
-            workflow = yaml.load(f, Loader=yaml.BaseLoader)
+            workflow = yaml.safe_load(f)
         
         workflow["jobs"]["job"]["env"]["ROCRATE_PROFILE_URI"] = rocrate_profile_uri
         workflow["jobs"]["job"]["env"]["WATER_LOGSHEET_URL"] = water_url
