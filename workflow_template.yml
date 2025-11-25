@@ -13,9 +13,9 @@ jobs:
       WATER_LOGSHEET_URL: undefined
       SEDIMENT_LOGSHEET_URL: undefined
       HARD_LOGSHEET_URL: undefined
-      DATA_QUALITY_CONTROL_THRESHOLD_DATE: "2100-01-01"
+      DATA_QUALITY_CONTROL_THRESHOLD_DATE: undefined
       DATA_QUALITY_CONTROL_ASSIGNEE: github-actions[bot]
-      RDF_AGGREGATOR_GLOB: "sediment/**/*: ttl, water/**/*: ttl, ro-crate-metadata.json: json-ld"
+      RDF_AGGREGATOR_GLOB: "sediment/**/*:ttl,water/**/*:ttl,ro-crate-metadata.json:json-ld"
     steps:
       - name: checkout
         uses: actions/checkout@v5
@@ -50,3 +50,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./unicornpages
+
