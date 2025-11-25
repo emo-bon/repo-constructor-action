@@ -1,7 +1,8 @@
-from github import Github, GithubException
 import base64
 import os
 import pandas as pd
+import yaml
+from github import Github, GithubException
 
 def create_or_update_file(repo_handle, path, content):
     try:
@@ -29,134 +30,46 @@ def create_or_update_file(repo_handle, path, content):
             print(f"successfully updated {path}")
 
 if __name__ == "__main__":
-    GITHUB_WORKSPACE = "/github/workspace"
-    GITHUB = Github(os.environ["PAT"])
-    FILE_PATH = os.environ["FILE_PATH"]
-    ORG = os.environ["ORG"]
+    GITHUB_WORKSPACE = Path(os.getenv("GITHUB_WORKSPACE"))
+    OCTOKIT = Github(os.getenv("PAT"))
 
-    df = pd.read_csv(os.path.join(GITHUB_WORKSPACE, FILE_PATH))
+    df = pd.read_csv(GITHUB_WORKSPACE / "logsheets.csv")
     df = df[df["autogenerate"] == 1]
     repos = [f"observatory-{obs.lower()}-crate" for obs in df["EMOBON_observatory_id"]]
     water_urls = [url for url in df["Water Column"]]
     sediment_urls = [url for url in df["Soft sediment"]]
+    hard_urls = [url for url in df["Hard_substrates"]]
     data_quality_control_threshold_dates = [date for date in df["data_quality_control_threshold_date"]]
     data_quality_control_assignees = [assignee for assignee in df["data_quality_control_assignee"]]
     rocrate_profile_uris = [uri for uri in df["rocrate_profile_uri"]]
 
-    for repo, water_url, sediment_url, data_quality_control_threshold_date, data_quality_control_assignee, rocrate_profile_uri in zip(repos, water_urls, sediment_urls, data_quality_control_threshold_dates, data_quality_control_assignees, rocrate_profile_uris):
-        print(f">>> {repo}")
-        
+    for repo, water_url, sediment_url, hard_url, data_quality_control_threshold_date, data_quality_control_assignee, rocrate_profile_uri in zip(repos, water_urls, sediment_urls, hard_urls, data_quality_control_threshold_dates, data_quality_control_assignees, rocrate_profile_uris):
+        organization = OCTOKIT.get_organization("emo-bon")
+
         # create repo
         try:
-            GITHUB.get_organization(ORG).create_repo(repo)
+            organization.create_repo(repo)
             print(f"successfully created {repo}")
         except GithubException as e:
             print(f"failed to create {repo}; {e}")
         
         # acquire reference to repo
-        repo_handle = GITHUB.get_organization(ORG).get_repo(repo)
+        repo_handle = organization.get_repo(repo)
 
-        # populate repo with README.md
-        path = "./README.md"
-        content = (
-            f"# {repo}\n"
-            "This repository is an RO-Crate containing the harvested EMO BON logsheets for this observatory, along with their representation as linked data.\n"
+        # generate workflow file
+        with open("/opt/workflow_template.yml", "r") as f:
+            workflow = yaml.load(f, loader=yaml.BaseLoader)
+        
+        workflow["jobs"]["job"]["env"]["ROCRATE_PROFILE_URI"] = rocrate_profile_uri
+        workflow["jobs"]["job"]["env"]["WATER_LOGSHEET_URL"] = water_url
+        workflow["jobs"]["job"]["env"]["SEDIMENT_LOGSHEET_URL"] = sediment_url
+        workflow["jobs"]["job"]["env"]["HARD_LOGSHEET_URL"] = hard_url
+        workflow["jobs"]["job"]["env"]["DATA_QUALITY_CONTROL_THRESHOLD_DATE"] = data_quality_control_threshold_date
+        workflow["jobs"]["job"]["env"]["DATA_QUALITY_CONTROL_ASSIGNEE"] = data_quality_control_assignee
+
+        # commit workflow file
+        create_or_update_file(
+            repo_handle=repo_handle,
+            path="./.github/workflows/workflow.yml",
+            content=yaml.dump(workflow, default_flow_style=False)
         )
-        create_or_update_file(repo_handle, path, content)
-
-        # populate repo with workflow.yml
-        path = "./.github/workflows/workflow.yml"
-        content = (
-            "name: linked-data-etl\n"
-            "on:\n"
-            "  workflow_dispatch:\n"
-            "  schedule:\n"
-            "    - cron: '0 0 1 */6 *'\n"
-            "jobs:\n"
-            "  job:\n"
-            "    runs-on: ubuntu-latest\n"
-            "    env:\n"
-           f"      ROCRATE_PROFILE_URI: {rocrate_profile_uri}\n"
-            "    steps:\n"
-            "      - name: checkout\n"
-            "        uses: actions/checkout@v3\n"
-            "      - name: download\n"
-            "        uses: emo-bon/populate-action@dev\n"
-            "      - name: git-auto-commit-action\n"
-            "        uses: stefanzweifel/git-auto-commit-action@v5\n"
-            "        with:\n"
-            "          commit_message: update on behalf of logsheet-downloader-action\n"
-            "      - name: data-quality-control-action\n"
-            "        uses: emo-bon/data-quality-control-action@main\n"
-            "        env:\n"
-            "          PAT: ${{ secrets.GITHUB_TOKEN }}\n"
-            "          REPO: ${{ github.repository }}\n"
-           f"          ASSIGNEE: {data_quality_control_assignee}\n"
-            "      - name: git-auto-commit-action\n"
-            "        uses: stefanzweifel/git-auto-commit-action@v5\n"
-            "        with:\n"
-            "          commit_message: update on behalf of data-quality-control-action\n"
-            "      - name: rocrate-sembench-setup\n"
-            "        uses: vliz-be-opsci/rocrate-sembench-setup@main\n"
-            "        env:\n"
-            "          PROFILE: ${{ env.ROCRATE_PROFILE_URI }}\n"
-            "      - name: semantify\n"
-            "        uses: vliz-be-opsci/semantify@main\n"
-            "      - name: rocrate-sembench-cleanup\n"
-            "        run: sudo rm -rf ~sembench_data_cache/ ~sembench_kwargs.json\n"
-            "      - name: git-auto-commit-action\n"
-            "        uses: stefanzweifel/git-auto-commit-action@v5\n"
-            "        with:\n"
-            "          commit_message: update on behalf of semantify\n"
-            "      - name: rocrate-metadata-generator-action\n"
-            "        uses: emo-bon/rocrate-metadata-generator-action@main\n"
-            "        env:\n"
-            "          PROFILE: ${{ env.ROCRATE_PROFILE_URI }}\n"
-            "          REPO: ${{ github.repository }}\n"
-            "      - name: git-auto-commit-action\n"
-            "        uses: stefanzweifel/git-auto-commit-action@v5\n"
-            "        with:\n"
-            "          commit_message: update on behalf of rocrate-metadata-generator-action\n"
-            "      - name: rdf-aggregate-action\n"
-            "        uses: vliz-be-opsci/rdf-aggregate-action@main\n"
-            "        env:\n"
-            "          GLOBS: sediment/**/*:ttl|water/**/*:ttl|ro-crate-metadata.json:json-ld\n"
-            "      - name: git-auto-commit-action\n"
-            "        uses: stefanzweifel/git-auto-commit-action@v5\n"
-            "        with:\n"
-            "          commit_message: update on behalf of rdf-aggregate-action\n"
-            "      - name: rocrate-metadata-generator-action\n"
-            "        uses: emo-bon/rocrate-metadata-generator-action@main\n"
-            "        env:\n"
-            "          PROFILE: ${{ env.ROCRATE_PROFILE_URI }}\n"
-            "          REPO: ${{ github.repository }}\n"
-            "      - name: git-auto-commit-action\n"
-            "        uses: stefanzweifel/git-auto-commit-action@v5\n"
-            "        with:\n"
-            "          commit_message: update on behalf of rocrate-metadata-generator-action\n"
-            "      - name: rocrate-to-pages\n"
-            "        uses: vliz-be-opsci/rocrate-to-pages@latest\n"
-            "        with:\n"
-            "          multiple_rocrates: true\n"
-            "          release_management: false\n"
-            "          include_draft: false\n"
-            "          index_html: false\n"
-            "          space_to_pages_homepage: https://data.emobon.embrc.eu\n"
-            "      - name: actions-gh-pages\n"
-            "        uses: peaceiris/actions-gh-pages@v3\n"
-            "        with:\n"
-            "          github_token: ${{ secrets.GITHUB_TOKEN }}\n"
-            "          publish_dir: ./unicornpages\n"
-        )
-        create_or_update_file(repo_handle, path, content)
-
-        # populate repo with workflow_properties.yml
-        path = "./config/workflow_properties.yml"
-        content = (
-            f"water: {water_url}\n"
-            f"sediment: {sediment_url}\n"
-            f"data_quality_control_threshold_date: {data_quality_control_threshold_date}\n"
-        )
-        create_or_update_file(repo_handle, path, content)
-
-        print()
